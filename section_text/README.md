@@ -127,3 +127,172 @@ We can also use the `cli` to create this one file components:
   `ng g c habit-detail`
   The `g` is shortcut for `generate` and `c` for `component`
 - You should see that a `habit-detail` directory is created with only the `spec` and the `component` files
+
+### Note
+
+Every time you create a `component` using the `angular cli` it automatically imports that component to the `app.modules` file and adds that component to the `declarations` array so it can be ready to use.
+
+## Pass data to components with input
+
+Before passing data to a component we need some to pass it so first we are going to add some to the `habit-list` component.
+
+- On your editor; go to the `habit-list` directory inside of the `app` folder
+- Open the `habit-list.component.ts` file
+- Remove the content of the `template` property and add the following on the component directive
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <ul>
+        <li></li>
+      </ul>
+    `,
+    styles: []
+  })
+  ```
+- Now go to the top of the `HabitListComponent` class and add a `habits` variable that will be an `array`
+
+  ```js
+  export class HabitListComponent implements OnInit {
+
+    habits = [];
+
+    ...
+  }
+  ```
+
+- On the `habits` array add the following items
+
+  ```js
+  export class HabitListComponent implements OnInit {
+    habits = [
+      {
+        id: 1,
+        title: "Check in with parents once a week",
+      },
+      {
+        id: 2,
+        title: "Record 2 videos per day",
+      },
+      {
+        id: 3,
+        title: "Work on side project 5 hours/week",
+      },
+      {
+        id: 4,
+        title: "Write for 20 minutes a day",
+      },
+    ];
+
+    ...
+  }
+  ```
+
+- Update the `li` on the `template` property that you add before to add the `*ngFor` [directive](https://angular.io/api/common#directives)(A `directive` attribute you can change the apperance of the `DOM`)
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <ul>
+        <li *ngFor="let habit of habits"></li>
+      </ul>
+    `,
+    styles: []
+  })
+  ```
+  This `directive` will loop throw the elements of the `habits` array and put each element on the `habit` variable on each cycle
+- Now as add the `habit` variable as a child of the `li` tag calling it `title` property
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <ul>
+        <li *ngFor="let habit of habits">{{ habit.title }}</li>
+      </ul>
+    `,
+    styles: []
+  })
+  ```
+- Now go to the `app.component.ts` file
+- Update the `title` to `Habit Tracker`
+- On the `template` property on the component directive add the `habit-list` component tag
+  ```js
+  @Component({
+    selector: 'app-root',
+    template: `
+      <h1>{{ title }}</h1>
+      <app-habit-list></app-habit-list>
+    `,
+    styles: ['h1 { color: purple }']
+  })
+  ```
+- On your terminal; go to the root of the `angular` project
+- Start your local server using: `ng serve`
+- On your browser go to http://localhost:4200/
+- You should see your new `title` and a list of all `habits`
+
+Now we are ready to pass some data to a component. Since we have a list of `habits` that is on the `habit-list` component but we want to extract the `li` tag of this component so we can add some functionality or styling instead of growing `habit-list`
+
+- On your terminal; go to the root of the `angular` project(Open another tab of your terminal since the local server is running)
+- Create a new component call `habit-item`
+  `ng g c habit-item`
+- On your editor; you should see that a new `habit-item` directory is created
+- Open the `habit-item.component.ts`
+- Delete the `template` content and add the `li` without the `directive`(We don't want the loop happen inside of this component)
+  ```js
+  @Component({
+    selector: 'app-habit-item',
+    template: `
+      <li>{{ habit.title }}</li>
+    `,
+    styles: []
+  })
+  ```
+- Now we need to get back to the `habit-list` component and replace the `li` tag with the selector of the `habit-item` component
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <ul>
+        <app-habit-item *ngFor="let habit of habits"></app-habit-item>
+      </ul>
+    `,
+    styles: []
+  })
+  ```
+  This will render the `habit-item` component on each cycle
+- But how do we send the actual `habit` to the component; well we are going to use an [input](https://angular.io/api/core/Input). So go to the `HabitItemComponent` class and create a `habit` property using the `Input` decorator
+
+  ```js
+  export class HabitItemComponent implements OnInit {
+    @Input()
+    habit: any;
+
+    constructor() {}
+
+    ngOnInit(): void {}
+  }
+  ```
+
+  Maybe you will see the property at the side of the `Input` directive but is the same if you have it on the next line
+
+- Get back to the `habit-list` component and in the `habit-item` selector add the following
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <ul>
+        <app-habit-item *ngFor="let habit of habits" [habit]="habit"></app-habit-item>
+      </ul>
+    `,
+    styles: []
+    })
+  ```
+  Need to put the `square brackets` to specify to `angular` that is an `input`
+- Go to your browser and refresh the page
+- You should see the list of `habits` like you have it before
