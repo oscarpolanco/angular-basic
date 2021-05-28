@@ -71,3 +71,59 @@ The `cli` comes with a development server by default. Let's check the output on 
   ```
   With 2 `curly braces` will do a 2 way data biding between the `title` that is on our component and the one on the template
 - Go back to the browser and you will see the `title` on the page
+
+## Use single file components by default in angular
+
+By default the `angular cli` will create a `component` separated into files; one is the `template`; the other is the `stylesheet` and the other one is the `components` file but it don't have to be this way:
+
+- On your editor go to the `app.component.ts` file on the `app` directory
+- Update the `templateURL` property to `template` and replace the `template` with the following
+  ```js
+  @Component({
+      selector: 'app-root',
+      template: `<h1>{{ title }}</h1>`,
+      styleUrls: ['./app.component.css']
+  })
+  ```
+- Now update the `styleUrls` property to `styles` and on the `array` of `stylesheet` paths put the actual `style` of the `h1` as is show next:
+  ```js
+  @Component({
+      selector: 'app-root',
+      template: `<h1>{{ title }}</h1>`,
+      styles: ['h1 { color: blue }']
+  })
+  ```
+- Delete the `app.component.html` and `app.component.css` files
+- On your terminal; go to the root of the `angular` project
+- Start your local server using `ng serve`
+- On your browser go to this [url](http://localhost:4200/)
+- You should see the same title as before in a blue color
+
+We can also use the `cli` to create this one file components:
+
+- On your terminal go to the root of the `angular` project
+- Run the following command
+  `ng generate component habit-list -d`
+  The `-d` flag will run the command as is expected but don't actually do any changes
+- You will see on the output of the command that it will create a lot of files for one `component` as we see before
+- Now to the last command add `inlineTemplate` and `inlineStyle` flags
+  `ng generate component habit-list --inlineTemplate --inlineStyle -d`
+- You will see on the output that only creates the `spec` and the `component` files
+- Remove the the `-d` flag and create the `habit-list` component
+  `ng generate component habit-list --inlineTemplate --inlineStyle`
+- You should see the `habit-list` is created with just the `spec` and the `component` file
+- We can go one step more and do this our expected behavior. On your editor go to the `angular.json` on the root of the `angular` project
+- Search for the `schematics` property. This lets you override the defaults
+- Add the following:
+  ```js
+  "schematics": {
+      "@schematics/angular:component": {
+        "inlineStyle": true,
+        "inlineTemplate": true
+      }
+  }
+  ```
+- Now get back to your terminal and run the following command:
+  `ng g c habit-detail`
+  The `g` is shortcut for `generate` and `c` for `component`
+- You should see that a `habit-detail` directory is created with only the `spec` and the `component` files
