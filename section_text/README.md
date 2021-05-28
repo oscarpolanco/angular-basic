@@ -454,3 +454,133 @@ We receive the value of the form; then create an `id` for the `habit`; push the 
 - You should see an input before the `habit` list
 - Fill in the input and click on the submit button
 - The `habit` that you add on the input should appear on the `habit` list bellow
+
+## Communicate between components with outputs and event emitters
+
+Now we will move the form to its own child component to continue separating elements so we can add functionality and its own style and don't make the list component grow but there will be an issue that we take care of after we move almost all code to the new form component.
+
+- First; on your terminal go to the root of the `angular` project
+- Create a new component call `habit-form`
+  `ng g c habit-form`
+- On your editor; you should see that a new directory call `habit-form` is created on the `app` folder
+- Enter to the `habit-form.component.ts`
+- Remove the content of the `template` property in the component directive
+- Copy the component selector
+- Go to the `habit-list.component.ts`
+- Add the `habit-form` component selector and cut the form of the `template` property
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <app-habit-form></app-habit-form>
+      <ul>
+        <app-habit-item *ngFor="let habit of habits" [habit]="habit"></app-habit-item>
+      </ul>
+    `,
+    styles: []
+  })
+  ```
+- Go to the `habit-form` component file
+- Paste the form to the template property
+  ```js
+  @Component({
+    selector: 'app-habit-form',
+    template: `
+    <form [formGroup]="habitForm" (ngSubmit)="onSubmit(habitForm.value)">
+      <input type="text" placeholder="Add habit" formControlName="title" />
+      <button type="submit">Add</button>
+    </form>
+    `,
+    styles: []
+  })
+  ```
+- Import the `FormBuilder` from `@angular/forms`
+  `import { FormBuilder } from '@angular/forms';`
+- Now on the `HabitFormComponent` class add the `habitForm` model
+  ```js
+  export class HabitFormComponent implements OnInit {
+    habitForm: any;
+    ...
+  }
+  ```
+- Now go to the `habit-list` component and copy the `constructor` of the `HabitListComponent`
+- Then paste the `constructor` on the `HabitFormComponent` class
+
+  ```js
+  export class HabitFormComponent implements OnInit {
+    habitForm: any;
+
+    constructor(private formBuilder: FormBuilder) {
+      this.habitForm = this.formBuilder.group({
+        title: '',
+      })
+    }
+    ...
+  }
+  ```
+
+We move almost all the code of the form to it own component but we are missing the `onSubmit` function to make the `ngSubmit` event work. We can't just copy the code we have on the `habit-list` because as you may notice will have an error because we won't have the `habit` list on the `habit-form` component. We could pass via an `input` the value of the `habit` list into the `habit-form` but we will be modifying the data on the child instead of the father and that is not a good practice; is better that we emit the new value from the form to the array and we can do just that with a something call [event emitter](https://angular.io/api/core/EventEmitter) on `angular` using an [output](https://angular.io/api/core/Output). Let get into it!!!
+
+- On your editor; go to thee `habit-form` component and import `Output` and `EventEmitter` from `@angular/core`
+  `import { Component, OnInit, Output, EventEmitter } from '@angular/core';`
+- On the `HabitFormComponent` add the following
+
+  ```js
+  export class HabitFormComponent implements OnInit {
+    habitForm: any;
+     @Output() addHabit = new EventEmitter<any>();
+
+    constructor(private formBuilder: FormBuilder) {
+      this.habitForm = this.formBuilder.group({
+        title: '',
+      })
+    }
+    ...
+  }
+  ```
+
+  This will create an `addHabit` variable that is an `output` and will have an instance of the `EventEmitter` class(You can specify the type that you want but in this case, we don't specify any)
+
+- Now create the `onSubmit` function with the following content
+
+  ```js
+  export class HabitFormComponent implements OnInit {
+    habitForm: any;
+     @Output() addHabit = new EventEmitter<any>();
+
+    constructor(private formBuilder: FormBuilder) {...}
+
+    onSubmit(newHabit: {id: number, title: string}) {
+      this.addHabit.emit(newHabit);
+      this.habitForm.reset();
+    }
+    ...
+  }
+  ```
+
+  This will emit the new value to its father component
+
+- Now go to the `habit-list` component
+- On the `habit-form` selector add the following
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <app-habit-form (addHabit)="onAddHabit($event)"></app-habit-form>
+      <ul>
+        <app-habit-item *ngFor="let habit of habits" [habit]="habit"></app-habit-item>
+      </ul>
+    `,
+    styles: []
+  })
+  ```
+  This will set the `addHabit output` and tell `angular` that run the `onAddHabit` function(We will create next) sending the actual event object
+- Go down and rename the `onSubmit` function to `onAddHabit` and delete the `reset` line
+- Remove the `habitForm` and the content and parameters in the `constructor`(Do not eliminate the `constructor`)
+- On your terminal run your local server
+- On your browser; go to http://localhost:4200/
+- You should see the same list and input on the page
+- Fill the input and submit
+- The new `habit` should be added to the list
