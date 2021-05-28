@@ -296,3 +296,161 @@ Now we are ready to pass some data to a component. Since we have a list of `habi
   Need to put the `square brackets` to specify to `angular` that is an `input`
 - Go to your browser and refresh the page
 - You should see the list of `habits` like you have it before
+
+## Create your first reactive form on angular
+
+At this moment we have a `habit` list on the page but we don't have any way to add some new `habits` so we will make a form that helps us with that.
+
+- Whenever you need to add some `core` functionality to your `angular` app; you will import something from the `angular` module. So on your editor; go to the `app.module.ts` file
+- Import `ReactiveFormsModule` from `@angular/forms`
+  `import { ReactiveFormsModule } from '@angular/forms';`
+- Then add `ReactiveFormsModule` to the `imports` array
+  ```js
+  @NgModule({
+    declarations: [...],
+    imports: [
+      BrowserModule,
+      ReactiveFormsModule
+    ],
+    providers: [],
+    bootstrap: [AppComponent]
+  })
+  ```
+- Go to the `habit-list` component file
+- Before that we get to work on the form template we need to create a `model` on the component; so add a property to the `HabitListComponent` class call `habitForm`
+
+```js
+export class HabitListComponent implements OnInit {
+
+   habitForm;
+   ...
+}
+```
+
+- Now we are going to use something that the `ReactiveFormsModule` module provides us that is call `formBuilder`. Import `FormBuilder` from `@angular/forms`
+  `import { FormBuilder } from '@angular/forms';`
+
+- On the constructure add the following:
+
+```js
+export class HabitListComponent implements OnInit {
+   ...
+   constructor(private formBuilder: FormBuilder) {}
+}
+```
+
+- Now we need to create the `model` we going to use the `formBuilder` and define something that is called a `group`(A `group` is a group of controls for a form)
+
+```js
+export class HabitListComponent implements OnInit {
+   ...
+   constructor(private formBuilder: FormBuilder) {
+     this.habitForm = this.formBuilder.group();
+   }
+}
+```
+
+- To define the form we pass an object with the fields that will become something called a `form control`. In this case, we will only add a `title`
+
+```js
+export class HabitListComponent implements OnInit {
+   ...
+   constructor(private formBuilder: FormBuilder) {
+     this.habitForm = this.formBuilder.group({
+       title: '',
+     });
+   }
+}
+```
+
+- Now we can work with the `template`. Add the following to the `template` property of the component directive
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <form>
+        <input type="text" placeholder="Add habit"/>
+        <button type="submit">Add</button>
+      </form>
+      <ul>
+        <app-habit-item *ngFor="let habit of habits" [habit]="habit"></app-habit-item>
+      </ul>
+    `,
+    styles: []
+    })
+  ```
+- Then we need to connect the form to the `model` so we need to bound the form to the `form group`
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <form [formGroup]="habitForm">
+        <input type="text" placeholder="Add habit" />
+        <button type="submit">Add</button>
+      </form>
+      <ul>
+        <app-habit-item *ngFor="let habit of habits" [habit]="habit"></app-habit-item>
+      </ul>
+    `,
+    styles: []
+    })
+  ```
+  The `square brackets` mean `input` or `biding` on `angular` and on this case we are `biding` the form to the `form group` passing the `model` that we already created
+- Now we need to `bind` the `input` to the `field` that we created
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <form [formGroup]="habitForm">
+        <input type="text" placeholder="Add habit" formControlName="title" />
+        <button type="submit">Add</button>
+      </form>
+      <ul>
+        <app-habit-item *ngFor="let habit of habits" [habit]="habit"></app-habit-item>
+      </ul>
+    `,
+    styles: []
+    })
+  ```
+- Finnally; we need some way to submit the form and we can do this using an `angular` event call `ngSubmit`
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <form [formGroup]="habitForm" (ngSubmit)="onSubmit(habitForm.value)">
+        <input type="text" placeholder="Add habit" formControlName="title" />
+        <button type="submit">Add</button>
+      </form>
+      <ul>
+        <app-habit-item *ngFor="let habit of habits" [habit]="habit"></app-habit-item>
+      </ul>
+    `,
+    styles: []
+    })
+  ```
+  The `parenthesis` on `ngSubmit` determines that is an event or an output. The `onSubmit` function is not created yet; we will do it next
+- On the `HabitListComponent` class add the following function
+
+```js
+export class HabitListComponent implements OnInit {
+   ...
+   onSubmit(newHabit: {id: number, title: string}) {
+    const id = this.habits.length + 1;
+    newHabit.id = id;
+    this.habits.push(newHabit);
+    this.habitForm.reset();
+  }
+}
+```
+
+We receive the value of the form; then create an `id` for the `habit`; push the `new habit` to the ` habit` array and finally, we clean the input
+
+- On your terminal; go to the root of the `angular` project and run your local server
+- On your browser; go to http://localhost:4200/
+- You should see an input before the `habit` list
+- Fill in the input and click on the submit button
+- The `habit` that you add on the input should appear on the `habit` list bellow
