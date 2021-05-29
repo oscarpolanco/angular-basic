@@ -8,19 +8,23 @@ export class HabitService {
   habits = [
     {
       id: 1,
-      title: 'Check in with parents once a week'
+      title: 'Check in with parents once a week',
+      count: 5,
     },
     {
       id: 2,
-      title: 'Record 2 videos per day'
+      title: 'Record 2 videos per day',
+      count: 4,
     },
     {
       id: 3,
-      title: 'Work on side project 5 hours/week'
+      title: 'Work on side project 5 hours/week',
+      count: 3,
     },
     {
       id: 4,
-      title: 'Write for 20 minutes a day'
+      title: 'Write for 20 minutes a day',
+      count: 6,
     },
   ];
 
@@ -30,7 +34,7 @@ export class HabitService {
     return of(this.habits)
   }
 
-  addHabit(newHabit: {id: number, title: string}) {
+  addHabit(newHabit: {id: number, title: string, count: number}) {
     const id = this.habits.length + 1;
     newHabit.id = id;
     this.habits.push(newHabit);

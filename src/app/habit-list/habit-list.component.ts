@@ -21,7 +21,7 @@ export class HabitListComponent implements OnInit {
     this.habits = this.habitService.getHabits();
   }
 
-  onAddHabit(newHabit: {id: number, title: string}) {
+  onAddHabit(newHabit: {id: number, title: string, count: number}) {
     this.habitService.addHabit(newHabit);
   }
 
