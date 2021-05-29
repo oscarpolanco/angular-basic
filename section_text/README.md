@@ -709,3 +709,119 @@ We have our `habits` array and the `add habit` logic store on our component and 
 - You should see the `Habits` list like before with the input and the submit button
 - Fill the input and submit the data
 - You should see that the input data clean itself and appear at the bottom of the `habit` list
+
+## Add custom data types with typescript interface on angular
+
+As you can see on some parts of the app we are using the generic `any` type for our `habits` but we actually want our custom type so we can use it across the app.
+
+- On your terminal; go to the root of the `angular` project
+- Use the `interface` command to create a new type call `habit`
+  `ng generate interface habit` or `ng g i habit`
+- On your editor, you will see a `habit.ts` file on the `apps` directory
+- On this newly created file add the following
+  ```js
+  export interface Habit {
+    id: number;
+    title: string;
+    count: number;
+  }
+  ```
+  This will represent the structure of a `habit`(We don't add the `count` yet on the `habit` array)
+- Go to the `habit-service.ts` file and import the new `Habit` type
+  `import { Habit } from './habit';`
+- Now on the `habits` array add the type(Will be a `Habit` array)
+  ```js
+  habits: Habit[] = [
+    {
+      id: 1,
+      title: 'Check in with parents once a week',
+    },
+    {
+      id: 2,
+      title: 'Record 2 videos per day',
+    },
+    {
+      id: 3,
+      title: 'Work on side project 5 hours/week',
+    },
+    {
+      id: 4,
+      title: 'Write for 20 minutes a day',
+    },
+  ];
+  ```
+  As you can see you got an error because the `count` should exist for this type
+- Go to the `habit.ts` file and add a question mark on the `count`
+  ```js
+  export interface Habit {
+    id: number;
+    title: string;
+    count?: number;
+  }
+  ```
+  This means that the `count` can exist or not
+- Check that the error is gone on the `habit.service.ts` file
+- Add the `count` property on each `habit`
+  ```js
+  habits: Habit[] = [
+    {
+      id: 1,
+      title: 'Check in with parents once a week',
+      count: 5,
+    },
+    {
+      id: 2,
+      title: 'Record 2 videos per day',
+      count: 4,
+    },
+    {
+      id: 3,
+      title: 'Work on side project 5 hours/week',
+      count: 3,
+    },
+    {
+      id: 4,
+      title: 'Write for 20 minutes a day',
+      count: 6,
+    },
+  ];
+  ```
+- Go back to the `habit.ts` file and remove the question mark
+- In the `habit.service.ts` and tell `typescript` that the `getHabits` function return an array of `habits`
+  ```js
+  getHabits(): Observable<Habit[]> {
+    return of(this.habits)
+  }
+  ```
+- The define the type of the `newHabit` parameter on the `addHabit` function to be a `habit`
+  ```js
+  onAddHabit(newHabit: Habit) {
+    this.habitService.addHabit(newHabit);
+  }
+  ```
+- Go to the `habit-list.component.ts` file
+- Import the `Habit` type
+  `import { Habit } from '../habit';`
+- Update the `habits` property on the `HabitListComponent` class
+  `habits: Observable<Habit[]>;`
+- Then on the `onAddHabit` function define it parameter as a `habit`
+  ```js
+  onAddHabit(newHabit: Habit) {
+    this.habitService.addHabit(newHabit);
+  }
+  ```
+- Finally go to the `habit-item.component.ts` file
+- Import the `Habit` type
+  `import { Habit } from '../habit';`
+- Add the `Habit` type to the `input`
+  `@Input() habit: Habit;`
+- Since we add a type to the `input`; typescript will ask us to initialice it value on the `constructor`
+  ```js
+  constructor() {
+    this.habit = {
+      id: 0,
+      title: '',
+      count: 0
+    }
+  }
+  ```
