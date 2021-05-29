@@ -584,3 +584,128 @@ We move almost all the code of the form to it own component but we are missing t
 - You should see the same list and input on the page
 - Fill the input and submit
 - The new `habit` should be added to the list
+
+## Share data and business logic throughout an angular application service
+
+We have our `habits` array and the `add habit` logic store on our component and that is ok for a small application but what if we need to access this information or add another `habit` in another place of the application; we will need to pass this code somehow or duplicate it but `angular` have a solution for us called [service](https://angular.io/guide/architecture-services). Now let's create this `service`:
+
+- On your terminal; go to the root of the `angular` project
+- Use the `service` command to generate a new `service` call `habit`
+  `ng generate service habit` or `ng g s habit`
+- On your editor; you will see a new file called `habit-service.ts`
+- Go to the `habit-list` component and cut the `habits` array(Leave the `habits` as a property of the class)
+- Paste it on the `HabitService` class on the `habit.service` file
+- Go back to the `habit-list` component and copy the `onAddHabit` function
+- Get back to the `HabitService` class and paste it
+- Rename from `onAddHabit` to `addHabit` in the `habit-service` file
+- Import `Observable` and `of` from `rxjs`
+  `import { Observable, of } from 'rxjs';`
+- Now we need to create a function to get the `habits` so on the `HabitService` class add a new function call `getHabits`
+
+  ```js
+  export class HabitService {
+    habits = [...];
+
+    constructor() { }
+
+    getHabits(): Observable<any> {
+      return of(this.habits)
+    }
+
+    addHabit(newHabit: {id: number, title: string}) {
+      const id = this.habits.length + 1;
+      newHabit.id = id;
+      this.habits.push(newHabit);
+    }
+  }
+  ```
+
+  We change the array to a [observable](https://angular.io/guide/observables) so if we move to a real `http` call the component is already set up correctly
+
+- The `service` is already set so we need to make it available to the `habit-list` component and to do this the first thing that we want to do is to make sure that the `habits` is an `observable` so import `Observable` from `rxjs`
+  `import { Observable, of } from 'rxjs';`
+- Add the typing to the `habits` property in the `HabitListComponent` class
+
+  ```js
+  export class HabitListComponent implements OnInit {
+  habits: Observable<any>;
+
+    constructor() {}
+
+    onAddHabit(newHabit: {id: number, title: string}) {...}
+
+    ngOnInit(): void {}
+
+  }
+  ```
+
+- We want to have the collection on `habits` when the component loads so to do this we need to inject an instance of the `service` on the `constructor`
+
+  ```js
+  export class HabitListComponent implements OnInit {
+  habits: Observable<any>;
+
+    constructor(private habitService: HabitService) {}
+
+    onAddHabit(newHabit: {id: number, title: string}) {...}
+
+    ngOnInit(): void {}
+
+  }
+  ```
+
+- `Angular` provides something call the `async pipe` that is a pure function that we can use to manipulate data on the `template` so with this we will tell `angular` that `habits` is an `observable` and need to `subscribe` or `unsubscribe` and do everything you need to do so you can iterate the `habits`. So on the `template` add the following:
+  ```js
+  @Component({
+    selector: 'app-habit-list',
+    template: `
+      <h2>Habits</h2>
+      <app-habit-form (addHabit)="onAddHabit($event)"></app-habit-form>
+      <ul>
+          <app-habit-item *ngFor="let habit of habits | async" [habit]="habit"></app-habit-item>
+      </ul>
+    `,
+    styles: []
+  })
+  ```
+- Now we need to that the `habits` get the data from the `service` using the `getHabit` function that we did before
+
+  ```js
+  export class HabitListComponent implements OnInit {
+  habits: Observable<any>;
+
+    constructor(private habitService: HabitService) {
+      this.habits = this.habitService.getHabits();
+    }
+
+    onAddHabit(newHabit: {id: number, title: string}) {...}
+
+    ngOnInit(): void {}
+
+  }
+  ```
+
+- Then we need to update the `onAddHabit` function to use the `addHabit` method that we defined before on the `service`
+
+  ```js
+  export class HabitListComponent implements OnInit {
+  habits: Observable<any>;
+
+    constructor(private habitService: HabitService) {
+      this.habits = this.habitService.getHabits();
+    }
+
+    onAddHabit(newHabit: {id: number, title: string}) {
+      this.habitService.addHabit(newHabit);
+    }
+
+    ngOnInit(): void {}
+
+  }
+  ```
+
+- On your terminal; go to the root of your `angular` project and start your local server
+- In your browser; go to http://localhost:4200/
+- You should see the `Habits` list like before with the input and the submit button
+- Fill the input and submit the data
+- You should see that the input data clean itself and appear at the bottom of the `habit` list
