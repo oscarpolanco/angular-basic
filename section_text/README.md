@@ -1149,3 +1149,186 @@ Since this is a project that we concentrate on `angular` we are not going to do 
 - You will see the list of habits normally
 - Open your `dev tools` and click on the Network tab
 - You should see a `habits` request and if you click on it you will see that the request came from `http://localhost:4200/` and you still get the response of our `express` server
+
+## Refetching data with subjects in angular
+
+We will be working on adding some data to our `habit` list and present it initially on the browser but we need to make some changes first because we are now using our `express` server to give us the data of the list.
+
+### Adding data from angular to the express server
+
+- On your editor; go to the `server.js` file on the `server` directory
+- Add the following `route handler`
+  ```js
+  app.post("/api/habits", function (req, res) {
+    let habit = req.body;
+    habit.id = data.habits.length + 1;
+    habit.count = 0;
+    data.habits.push(habit);
+    res.send(habit);
+  });
+  ```
+  This `route handle` will handle all the `post` request that gets on our `express` server and will add to the `habit` list the data it receives as part of the request and response with the `habit` that you send if everything is ok
+- Now go to the `habit.service.ts` file
+- Update the `addHabit` function with the following content
+  ```js
+  addHabit(newHabit: Habit) {
+    return this.http.post<Habit>('/api/habits', newHabit);
+  }
+  ```
+  As we did before we use `HTTP` to make a request to the `express` server the only thing is that now we are doing a `post` request and sending the new `habit` as part of the `request`
+- Now we don't need the `habits` property so eliminate `habits` and it initialization on the `constructor`
+- Now go to the `habit-list.component.ts` file
+- We need to update the `getHabit` call on the `constructor` because we don't longer need to do any logic
+
+  ```js
+  export class HabitListComponent implements OnInit {
+    habits: Observable<Habit[]>;
+
+    constructor(private habitService: HabitService) {
+      this.habits = this.habitService.getHabits();
+    }
+
+    onAddHabit(newHabit: Habit) {...}
+
+    ngOnInit(): void {}
+
+  }
+  ```
+
+- Then we need to `subscribe` on the `addHabit` function since it will return an `observable`
+
+  ```js
+  export class HabitListComponent implements OnInit {
+    habits: Observable<Habit[]>;
+
+    constructor(private habitService: HabitService) {...}
+
+    onAddHabit(newHabit: Habit) {
+      this.habitService.addHabit(newHabit).subscribe();
+    }
+
+    ngOnInit(): void {}
+
+  }
+  ```
+
+- On your terminal; go to the root of the `angular` project and start both local servers
+- In your browser; go to http://localhost:4200/
+- You should see the list as we have before
+- Fill the input and submit
+- Refresh the page
+- You should see the new value on the list
+
+### Refeching the data on the frontend
+
+As you see before when we add a `habit` is not presented quickly on the browser until we refresh the page. You could say that we only need to make another call to get the data when we add a new `habit` but we don't actually subscribe to the `getHabit` on our component code; we are subscribing to this method using the `async pipe` in our `template`. What we need is something that listens when the `addHabit` method complete then tell `getHabit` to re-fire and we can use something called a [subject](https://rxjs.dev/guide/subject) that is like an `event emitter` that can have multiple `listeners`; is still an `observable` but it can do something called `multicasting` so you can listen for one thing and trigger another to happen. Let use the `subject`
+
+- On your editor; go to the `habit.service.ts` on the root of the `apps` directory
+- Import `Subject` from `rxjs`
+  `import { Observable, Subject } from 'rxjs';`
+- Add a new `private` class member on the `HabitService` class call `refetchSubject`
+  ```js
+  export class HabitService {
+    private refetchSubject = new Subject();
+    ...
+  }
+  ```
+- Now we need to add a `getter` for the `refetch`
+
+  ```js
+  export class HabitService {
+    private refetchSubject = new Subject();
+
+    constructor(private http: HttpClient) {}
+
+    get refetch() {
+      return this.refetchSubject.asObservable();
+    }
+    ...
+  }
+  ```
+
+  We add this `getter` so nobody can override the `subject` that we are using here
+
+- Then we need to `pipe` the `addHabit` request with a method called `next` of the `subject`
+
+  ```js
+  export class HabitService {
+    private refetchSubject = new Subject();
+
+    constructor(private http: HttpClient) {}
+
+    get refetch() {
+      return this.refetchSubject.asObservable();
+    }
+
+    getHabits(): Observable<Habit[]> {
+      return this.http.get<Habit[]>("/api/habits");
+    }
+
+    addHabit(newHabit: Habit) {
+      return this.http.post<Habit>('/api/habits', newHabit)
+        .pipe(tap(() => this.refetchSubject.next()));
+    }
+  }
+  ```
+
+  We use the [tap](https://rxjs.dev/api/operators/tap) operator that will help us with the `side-effects` then that will multicast the update to all the register `observers` that listen
+
+- Now get to the `habit-list.component.ts` file
+- We need to update the `getHabit` call to use the `refetch observable` that we making available on our `subject` and `pipe` the following
+
+  ```js
+  export class HabitListComponent implements OnInit {
+    habits: Observable<Habit[]>;
+
+    constructor(private habitService: HabitService) {
+      this.habits = this.habitService.refetch.pipe(
+        switchMap(() => this.habitService.getHabits())
+      );
+    }
+    ...
+  }
+  ```
+
+  We use the `switchMap` operator that switches over the `observable` that we are using here and run the `getHabits` function to get all values again. In other words, we are telling the `async pipe` to listen to the `refetch observable` and every time you hear something from it switch over to call the `getHabits` method
+
+- On your terminal; go to the root of the `angular` project and run both local servers
+- In your browser; go to http://localhost:4200/
+- You will see that the list is not there
+- Fill the input and submit
+- The list should reappear with the new value that you added
+- We have an issue because we don't use get the list of `habit` when we load the page and this is because we are using a plain `subject` with the `async pipe` and a plain `subject` doesn't initialize with a value. You may think that you can call the `next` method on the `constructor` but there is no guaranty that the `async pipe` would `subscribe` to the `subject` on time that is why that we are going to use a variant of the `subject` call `BehaviorSubject` so get back to the `habit.service.ts` file
+- Import `BehaviorSubject` from `rxjs`
+  `import { BehaviorSubject, Observable } from 'rxjs';`
+- Update the `refreshSubject` using the `BehaviorSubject`
+  ```js
+  export class HabitService {
+    private refetchSubject = new BehaviorSubject(null);
+    ...
+  }
+  ```
+  The `BehaviorSubject` receive a value that you can use to add some more logic for the initial value but we actually don't need it at the moment
+- Add the `null` value to the `next` method on the `addHabit` function
+
+  ```js
+  export class HabitService {
+    private refetchSubject = new Subject();
+
+    constructor(private http: HttpClient) {}
+
+    get refetch() {...}
+
+    getHabits(): Observable<Habit[]> {...}
+
+    addHabit(newHabit: Habit) {
+      return this.http.post<Habit>('/api/habits', newHabit)
+        .pipe(tap(() => this.refetchSubject.next(null)));
+    }
+  }
+  ```
+
+- Now go to your browser and refresh the page
+- You should see that the list appear on the load
+- Fill the input and submit
+- The new `habit` should be added to the list
