@@ -960,3 +960,192 @@ So far we just add some `scope` styling that will only affect our components but
   ```
 - Get back to your browser and refresh the page
 - You should see that a new `div` with the `container` class is added that wrap the elements of the application and have the style that you just added
+
+## Use a proxy with the angular CLI to fix the CORS development problem
+
+We have the `habits` on an array that live on our `service` but we actually want a more realistic example on which we get from a `backend` server the information that we need in this case the `habits` so on this section we will add a separate `express` server that makes available the `habits` on a certain endpoint and we will pull the data using `angular`.
+
+### Add an express server
+
+Since this is a project that we concentrate on `angular` we are not going to do a deep visualization of the `express` server; we only going to add it and make it work.
+
+- On your terminal; go to the root of your `angular` project
+- Install `express` and `body-parser`
+  `npm install --save express body-parser`
+- Now on your editor; in the root of your `angular` project create a new directory call `server`
+- Inside of the newly created directory create a file called `data.js` with the following content
+  ```js
+  module.exports = {
+    habits: [
+      {
+        id: 1,
+        title: "Check in with parents once a week",
+        count: 5,
+      },
+      {
+        id: 2,
+        title: "Record 2 videos per day",
+        count: 4,
+      },
+      {
+        id: 3,
+        title: "Work on side project 5 hours/week",
+        count: 3,
+      },
+      {
+        id: 4,
+        title: "Write for 20 minutes a day",
+        count: 6,
+      },
+    ],
+  };
+  ```
+- Now create another file called `server.js` with the following content
+
+  ```js
+  var express = require("express");
+  var bodyParser = require("body-parser");
+  var app = express();
+  var data = require("./data");
+
+  app.use(bodyParser.json());
+
+  app.set("port", process.env.PORT || 3001);
+
+  app.get("/api/habits", function (req, res) {
+    res.send(data.habits);
+  });
+
+  app.listen(app.get("port"), function () {
+    console.log("Server is running on port " + app.get("port"));
+  });
+  ```
+
+- Then we need to run not only our `frontend` local server; we also need to run this new `backend` server at the same time so go to the `package.json` on the root of your `angular` project
+- Update the `start` script with the following
+  ```js
+  "start": "node server/server.js & ng serve",
+  ```
+- Now on your terminal; go to the root of your `angular` project
+- Start your `frontend` and `backend` server using `npm start`
+- Go to http://localhost:4200/
+- You should see that the page runs normally
+- Now go to http://localhost:3001/api/habits
+- You should see the list of `habits` displayed
+
+### Getting the habits from our express server and use a proxy
+
+- On your editor; go to the `app.modules.ts` file on the root of the `apps` directory
+- Import `HttpClientModule` from `@angular/common/http`
+  `import { HttpClientModule } from '@angular/common/http';`
+- On the `imports` array add `HttpClientModule`
+  ```js
+  @NgModule({
+    declarations: [
+      AppComponent,
+      HabitListComponent,
+      HabitDetailComponent,
+      HabitItemComponent,
+      HabitFormComponent
+    ],
+    ...
+  })
+  ```
+- Now go to the `habit.service` at the root of the `apps` directory
+- Import `HttpClient` from `@angular/common/http`
+  `import { HttpClient } from '@angular/common/http';`
+- Go to the `constructor` of the `HabitService` class and make avilable `HttpClient`
+
+  ```js
+  export class HabitService {
+    habits: Habit[] = [...];
+
+    constructor(private http: HttpClient) {}
+
+    getHabits(): Observable<Habit[]> {
+      return of(this.habits);
+    }
+
+    addHabit(newHabit: Habit) {
+      const id = this.habits.length + 1;
+      newHabit.id = id;
+      this.habits.push(newHabit);
+    }
+  }
+  ```
+
+- Replace the `return` of the `getHabits` function with the following
+
+  ```js
+  export class HabitService {
+    habits: Habit[] = [...];
+
+    constructor(private http: HttpClient) {}
+
+    getHabits(): Observable<Habit[]> {
+      return this.http.get<Habit[]>("https://localhost:3001/api/habits");
+    }
+
+    addHabit(newHabit: Habit) {...}
+  }
+  ```
+
+  This will make a `get` request to our `express` server and return the `response` in our case a list of `habits`
+
+- Remove the content of `habits` and initialize on the `constructor`
+
+  ```js
+  export class HabitService {
+    habits: Habit[];
+
+    constructor(private http: HttpClient) {
+      this.habits = [];
+    }
+
+    getHabits(): Observable<Habit[]> {...}
+
+    addHabit(newHabit: Habit) {...}
+  }
+  ```
+
+- This theoretically will work but if you go to the browser we will have a `CORS`(Cross-origin policy error) meaning that we trying to hit `localhost:3001` from `localhost:4200` and the server is not set to allow this URL. This a lot of time happens in the development environment because on production we will be in the same domain. To fix this we are going to use a `proxy`; so go to the root of the `src` directory and create a new file call `proxy.conf.json`
+- Add the following content to this file
+  ```json
+  {
+    "/api": {
+      "target": "http://localhost:3001",
+      "secure": false
+    }
+  }
+  ```
+  The first thing is to add the URL that we will redirect in this case `api` then we specify the target of that redirection that is `http://localhost:3001` meaning that any URL with `/api` will be redirected to `http://localhost:3001` and finally we add the `secure` property as `false`
+- Now we need to let `angular` know about our `proxy` configuration so go to the `angular.json` file
+- Go to the `serve` section and create the following property
+  ```js
+  "options": {
+    "proxyConfig": "src/proxy.conf.json"
+  },
+  ```
+- Now get back to the `habit.service` file and remove `http://localhost:3001` on the `getHabits` function
+
+  ```js
+  export class HabitService {
+    habits: Habit[];
+
+    constructor(private http: HttpClient) {
+      this.habits = [];
+    }
+
+    getHabits(): Observable<Habit[]> {
+      return this.http.get<Habit[]>("/api/habits");
+    }
+
+    addHabit(newHabit: Habit) {...}
+  }
+  ```
+
+- On your terminal; go to the root of your `angular` project and start the 2 servers(If you have the server running; you will need to restart it so the changes take effect)
+- Go to http://localhost:4200/
+- You will see the list of habits normally
+- Open your `dev tools` and click on the Network tab
+- You should see a `habits` request and if you click on it you will see that the request came from `http://localhost:4200/` and you still get the response of our `express` server
