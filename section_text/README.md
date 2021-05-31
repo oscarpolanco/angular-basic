@@ -815,7 +815,7 @@ As you can see on some parts of the app we are using the generic `any` type for 
   `import { Habit } from '../habit';`
 - Add the `Habit` type to the `input`
   `@Input() habit: Habit;`
-- Since we add a type to the `input`; typescript will ask us to initialice it value on the `constructor`
+- Since we add a type to the `input`; typescript will ask us to initialize it value on the `constructor`
   ```js
   constructor() {
     this.habit = {
@@ -825,3 +825,57 @@ As you can see on some parts of the app we are using the generic `any` type for 
     }
   }
   ```
+
+## Add optional properties on angular to typescript interfaces
+
+We mentioned before the the `optional` types on our custom types just putting a `question mark` after the name but we can also add computed properties from out frontend to our custom interface. To demostrate this we will add a `streak` property on our custom type that will be a `boolean` that will became `true` if the `count` is more than `6`.
+
+- On your editor go to the `habits.ts` file on the root of the `apps` directory
+- Add the `streak` property like this:
+  ```js
+  export interface Habit {
+    id: number;
+    title: string;
+    count: number;
+    streak?: boolean;
+  }
+  ```
+  This will make the `streak` property optional that is what we want because it value will be calcualted on the frontend
+- Go to the `habit-list.component.ts`
+- Import the `map` function from `rxjs/operators`
+  `import { map } from 'rxjs/operators';`
+- Go to the `HabitListComponent` class and add the following
+
+  ```js
+  export class HabitListComponent implements OnInit {
+  habits: Observable<Habit[]>;
+
+  constructor(private habitService: HabitService) {
+    this.habits = this.habitService.getHabits().pipe(map(habits => {
+      return habits.map(habit => {
+        habit.streak = habit.count > 5 ? true : false;
+          return habit;
+        })
+      }));
+    }
+    ...
+  }
+  ```
+
+  Here we use the `pipe` function that link operators together so you can combine multiple functions into a single one in this case we call the `map` [operator](https://angular.io/guide/rx-library#operators) that will let you `loop` throw a set of values that you have and finally we add the `streak` property depending the amount of the `count` property
+
+- Now go to the `habit-item.component.ts`
+- On the `li` of the template add the following logic for the style of the element:
+  ```js
+  @Component({
+    selector: 'app-habit-item',
+    template: `
+      <li [style.color]="habit.streak ? 'red' : 'black'">{{ habit.title }} (Count: {{ habit.count }})</li>
+    `,
+    styles: []
+  })
+  ```
+  Here you will see that we add the `color` property to the `li` element and will be red if we have the `streak` property set to `true` otherwise will be `black`
+- On your terminal; go to the root of the `angular` project and run your local server
+- On your browser go to the http://localhost:4200/
+- You should see at least one of the `habits` with the `red` color if you are following the example
