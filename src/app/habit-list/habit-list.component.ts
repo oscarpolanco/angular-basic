@@ -20,16 +20,11 @@ export class HabitListComponent implements OnInit {
   habits: Observable<Habit[]>;
 
   constructor(private habitService: HabitService) {
-    this.habits = this.habitService.getHabits().pipe(map(habits => {
-      return habits.map(habit => {
-        habit.streak = habit.count > 5 ? true : false;
-        return habit;
-      })
-    }));
+    this.habits = this.habitService.getHabits();
   }
 
   onAddHabit(newHabit: Habit) {
-    this.habitService.addHabit(newHabit);
+    this.habitService.addHabit(newHabit).subscribe();
   }
 
   ngOnInit(): void {}

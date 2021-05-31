@@ -10,6 +10,6 @@ This is a basic `Angular` example
 ## Run the project
 
 - On your terminal; go to the root directory of this project
-- Run the `npm install` command
-- Now run the `ng serve` command
+- Install all dependencies using the `npm install` command
+- Now run the `frontend` and `backend` server using the `npm start` command
 - On your browser; go to http://localhost:4200/

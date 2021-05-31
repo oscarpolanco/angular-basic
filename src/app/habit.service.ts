@@ -7,19 +7,14 @@ import { Habit } from './habit';
   providedIn: 'root'
 })
 export class HabitService {
-  habits: Habit[];
 
-  constructor(private http: HttpClient) {
-    this.habits = [];
-  }
+  constructor(private http: HttpClient) {}
 
   getHabits(): Observable<Habit[]> {
     return this.http.get<Habit[]>("/api/habits");
   }
 
   addHabit(newHabit: Habit) {
-    const id = this.habits.length + 1;
-    newHabit.id = id;
-    this.habits.push(newHabit);
+    return this.http.post<Habit>('/api/habits', newHabit);
   }
 }
