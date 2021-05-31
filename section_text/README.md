@@ -920,3 +920,43 @@ By default `angular` use `scope css` that means that if you add some styling in 
 - Open the browser `dev tools`
 - Check the `css` of the `add` button
 - You will see that is a generated class for the `add` button that the `delete` button doesn't have
+
+## Add global styles on angular
+
+So far we just add some `scope` styling that will only affect our components but as you may think on the application we also defined some `global` styling that will affect all the applications. `Angular` provide us with the way to do exactly this:
+
+- On your editor; go to the `style.css` that is at the root of the `src` directory
+- In this file, we will add all the `global` styling that we need to add the following for the `body` element
+  ```css
+  body {
+    font-family: "Arial";
+    font-size: 16px;
+  }
+  ```
+- Now on your terminal; go to the root of your `angular` project and run your local server
+- On your browser go to http://localhost:4200/
+- You should see that the `body` element have the style that you just added
+- Now get back to the `style.css` file
+- You can also define classes that are globally available so define the following:
+  ```css
+  .container {
+    margin: 20px;
+    max-width: 600px;
+  }
+  ```
+- Now go to the `app.component.ts` file
+- Add a `div` with the `container` class that wrap the other elements on the `template` property
+  ```js
+  @Component({
+    selector: 'app-root',
+    template: `
+      <div class="container">
+        <h1>{{ title }}</h1>
+        <app-habit-list></app-habit-list>
+      </div>
+    `,
+    styles: ['h1 { color: purple }']
+  })
+  ```
+- Get back to your browser and refresh the page
+- You should see that a new `div` with the `container` class is added that wrap the elements of the application and have the style that you just added
