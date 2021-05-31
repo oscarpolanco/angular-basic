@@ -828,7 +828,7 @@ As you can see on some parts of the app we are using the generic `any` type for 
 
 ## Add optional properties on angular to typescript interfaces
 
-We mentioned before the the `optional` types on our custom types just putting a `question mark` after the name but we can also add computed properties from out frontend to our custom interface. To demostrate this we will add a `streak` property on our custom type that will be a `boolean` that will became `true` if the `count` is more than `6`.
+We mentioned before the `optional` types on our custom types just putting a `question mark` after the name but we can also add computed properties from our frontend to our custom interface. To demonstrate this we will add a `streak` property on our custom type that will be a `boolean` that will become `true` if the `count` is more than `6`.
 
 - On your editor go to the `habits.ts` file on the root of the `apps` directory
 - Add the `streak` property like this:
@@ -840,7 +840,7 @@ We mentioned before the the `optional` types on our custom types just putting a 
     streak?: boolean;
   }
   ```
-  This will make the `streak` property optional that is what we want because it value will be calcualted on the frontend
+  This will make the `streak` property optional that is what we want because its value will be calculated on the frontend
 - Go to the `habit-list.component.ts`
 - Import the `map` function from `rxjs/operators`
   `import { map } from 'rxjs/operators';`
@@ -862,7 +862,7 @@ We mentioned before the the `optional` types on our custom types just putting a 
   }
   ```
 
-  Here we use the `pipe` function that link operators together so you can combine multiple functions into a single one in this case we call the `map` [operator](https://angular.io/guide/rx-library#operators) that will let you `loop` throw a set of values that you have and finally we add the `streak` property depending the amount of the `count` property
+  Here we use the `pipe` function that links operators together so you can combine multiple functions into a single one in this case we call the `map` [operator](https://angular.io/guide/rx-library#operators) that will let you `loop` throw a set of values that you have and finally we add the `streak` property depending the amount of the `count` property
 
 - Now go to the `habit-item.component.ts`
 - On the `li` of the template add the following logic for the style of the element:
@@ -879,3 +879,44 @@ We mentioned before the the `optional` types on our custom types just putting a 
 - On your terminal; go to the root of the `angular` project and run your local server
 - On your browser go to the http://localhost:4200/
 - You should see at least one of the `habits` with the `red` color if you are following the example
+
+## Use scope component styles in Angular
+
+By default `angular` use `scope css` that means that if you add some styling in one component will only affect that component and not the others. Let test this a little bit.
+
+- Go to the `habit-form.component.ts`
+- On the `styles` array add the following
+  ```js
+  @Component({
+    selector: 'app-habit-form',
+    template: `... `,
+    styles: [
+      `
+        button {
+          background-color: blue;
+          color: white;
+          border-radius: 5px;
+          font-size: 16px;
+        }
+      `
+    ]
+  })
+  ```
+  This will add some styling to the button of our form
+- Now go to the `habit-item.component.ts`
+- On the `template` property add a `delete` button that will be inside of the `li` element
+  ```js
+  @Component({
+    selector: 'app-habit-item',
+    template: `
+      <li [style.color]="habit.streak ? 'red' : 'black'">{{ habit.title }} (Count: {{ habit.count }})<button type="button">Delete</button></li>
+    `,
+    styles: []
+  })
+  ```
+- In your terminal; go to the root of the `angular` project and start your local server
+- On your browser go to http://localhost:4200/
+- You should see that the `add` button have some styling and the `delete` button doesn't have the same styles
+- Open the browser `dev tools`
+- Check the `css` of the `add` button
+- You will see that is a generated class for the `add` button that the `delete` button doesn't have

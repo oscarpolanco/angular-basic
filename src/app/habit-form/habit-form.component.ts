@@ -10,8 +10,17 @@ import { FormBuilder } from '@angular/forms';
   </form>
   `,
   styles: [
+    `
+      button {
+        background-color: blue;
+        color: white;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+    `
   ]
 })
+
 export class HabitFormComponent implements OnInit {
   habitForm: any;
   @Output() addHabit = new EventEmitter<any>();
