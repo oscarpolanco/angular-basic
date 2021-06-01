@@ -3,13 +3,8 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-root',
   template: `
-    <div class="container">
-      <h1>{{ title }}</h1>
-      <app-habit-list></app-habit-list>
-    </div>
+    <router-outlet></router-outlet>
   `,
-  styles: ['h1 { color: purple }']
+  styles: []
 })
-export class AppComponent {
-  title = 'Habit Tracker';
-}
+export class AppComponent {}

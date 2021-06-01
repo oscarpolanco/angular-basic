@@ -1332,3 +1332,81 @@ As you see before when we add a `habit` is not presented quickly on the browser 
 - You should see that the list appear on the load
 - Fill the input and submit
 - The new `habit` should be added to the list
+
+## Add routing to an existing angular project
+
+If you remember at the beginning when we were creating the `angular` project using the `cli` it asks us if we add `angular routing` but at that moment we specify that we don't want it yet and let the `app` generate. Unfortunately, there is no other command to add it to an existing project but there are 2 ways of doing it:
+
+- The first one is to mimic what the `cli` do when you add the routing that is creating a separate routing module. To do that we use the `generate module` command as the following
+  `ng generate module app-routing --flat --module=app`
+
+The `app-routing` is just the convention you can put it whatever you want. The `flat` option will prevent that the new module is its own folder and the `module` option will be sure to add it to the `app` module(You can use the `-d` flag to test without updating the project).
+
+- In our case, we don't one a separate module for our routing we actually want the same module of our app to have the routing so it brings us to the second option that you have a which we will use that is adding the `route` functionality in the module that you will need the routing, in this case, the `app` module.
+
+### Step to add the routing in our app
+
+- On your editor; go to the `app.module.ts` in the `app` directory
+- Import `RouterModule` and `Routes` from `@angular/router`
+  `import { RouterModule, Routes } from '@angular/router';`
+- Now we need to define an array of `routes`
+  `const routes: Routes = [];`
+- Then we need to add `RouterModule` calling the `forRoot` function sending the `routes` array in the `imports` array
+  ```js
+  @NgModule({
+    declarations: [...],
+    imports: [
+      BrowserModule,
+      ReactiveFormsModule,
+      HttpClientModule,
+      RouterModule.forRoot(routes)
+    ],
+    providers: [],
+    bootstrap: [AppComponent]
+  })
+  ```
+- The finale step is to add somewhere the `routes` will display and this is call `router-outlet`. So go to the `app.component.ts`
+- Cut the content of the `template` property and add the `router-outlet` selector
+  ```js
+  @Component({
+    selector: 'app-root',
+    template: `
+      <router-outlet></router-outlet>
+    `,
+    styles: [`h1 { color: purple }`]
+  })
+  ```
+- On your terminal; go to the root of the `angular` project and create a new component call `home`
+- Go back to your editor; on the `app.modules.ts` add the following to the `routes` array
+  ```js
+  const routes: Routes = [{ path: "home", component: HomeComponent }];
+  ```
+  Here we define the `path` that we want and the `component` that will be call when the url matches with the `path` pattern
+- Now we also want to define a default `route` for when a `route` is not provided
+  ```js
+  const routes: Routes = [
+    { path: "home", component: HomeComponent },
+    { path: "", redirectTo: "/home", pathMatch: "full" },
+  ];
+  ```
+  We add the empty pattern on the `path` property then the `redirect` that will be used when the pattern matches the `path` in this case the `/home` route and the `pathMatch` set to `full` to make sure that we take only the complete URL that matches the empty string pattern
+- On your terminal go to the root of the `angular` project and run both local servers
+- In your browser; go to http://localhost:4200/
+- You should be redirected to `/home` and the page should have the correct component message
+- Now we need to set another component for our `habit` list
+- On your terminal; create another component called `habit-home`
+- On your editor; go to the `habit-home.component.ts` file in the new `habit-home` directory
+- Remove the default content of the `template` property and paste the content that you cut before the `app-component`
+- Go back to the `app.component.ts` and cut the style and the `title` property that we have on the class
+- Paste the style and the `title` property on the `habit-home` component
+- Now go to the `app.modules.ts` file and in the `routes` array add the `habits` list that will use the `habit-home` component
+  ```js
+  const routes: Routes = [
+    { path: "home", component: HomeComponent },
+    { path: "", redirectTo: "/home", pathMatch: "full" },
+    { path: "habits", component: HabitHomeComponent },
+  ];
+  ```
+- Go back to your browser and refresh the page
+- Go to http://localhost:4200/habits
+- You should see the list of `habits` and everything should work as expected
