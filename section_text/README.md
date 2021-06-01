@@ -1410,3 +1410,56 @@ The `app-routing` is just the convention you can put it whatever you want. The `
 - Go back to your browser and refresh the page
 - Go to http://localhost:4200/habits
 - You should see the list of `habits` and everything should work as expected
+
+## Navigate between routes in angular with routerLink
+
+Now we are going to add some navigation between routes in the application.
+
+- On your terminal; go to the root of the `angular` project and create another component call `account`
+- Go to the `app.module.ts` and add a new route on the `routes` array for the `account` component
+  ```js
+  const routes: Routes = [
+    { path: "home", component: HomeComponent },
+    { path: "account", component: AccountComponent },
+    { path: "", redirectTo: "/home", pathMatch: "full" },
+    { path: "habits", component: HabitHomeComponent },
+  ];
+  ```
+- Now go to the `app.components.ts` file on the `apps` directory
+- Add the following `nav` element before the `router-outlet` selector
+  ```js
+  @Component({
+    selector: 'app-root',
+    template: `
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/account">Account</a></li>
+        </ul>
+      <router-outlet></router-outlet>
+    `,
+    styles: []
+  })
+  ```
+- On your terminal; go to the root of the `angular` project and start both local servers
+- Go to http://localhost:4200/
+- You should see 2 links at the top
+- Click the `account` link
+- You should see that the page reload and guide you to the `account` page
+- We actually don't want that the page reload every time we change the component with the routing that is why we will use `routerLink`. Go to the `app.component.ts` and change the `href` for `routerLink`
+  ```js
+  @Component({
+    selector: 'app-root',
+    template: `
+      <nav>
+        <ul>
+          <li><a routerLink="/">Home</a></li>
+          <li><a routerLink="/account">Account</a></li>
+        </ul>
+      <router-outlet></router-outlet>
+    `,
+    styles: []
+  })
+  ```
+- Go to your browser and refresh the page
+- Click on one of the links at the top and you will see that you navigate the pages without reloading the page

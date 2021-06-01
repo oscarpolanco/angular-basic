@@ -11,9 +11,11 @@ import { HabitItemComponent } from './habit-item/habit-item.component';
 import { HabitFormComponent } from './habit-form/habit-form.component';
 import { HomeComponent } from './home/home.component';
 import { HabitHomeComponent } from './habit-home/habit-home.component';
+import { AccountComponent } from './account/account.component';
 
 const routes: Routes = [
   {path: 'home', component: HomeComponent},
+  {path: 'account', component: AccountComponent},
   {path: '', redirectTo:'/home', pathMatch: 'full'},
   {path: 'habits', component: HabitHomeComponent}
 ];
@@ -25,7 +27,8 @@ const routes: Routes = [
     HabitItemComponent,
     HabitFormComponent,
     HomeComponent,
-    HabitHomeComponent
+    HabitHomeComponent,
+    AccountComponent
   ],
   imports: [
     BrowserModule,
