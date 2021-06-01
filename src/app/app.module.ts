@@ -12,12 +12,14 @@ import { HabitFormComponent } from './habit-form/habit-form.component';
 import { HomeComponent } from './home/home.component';
 import { HabitHomeComponent } from './habit-home/habit-home.component';
 import { AccountComponent } from './account/account.component';
+import { AccountDetailComponent } from './account-detail/account-detail.component';
 
 const routes: Routes = [
   {path: 'home', component: HomeComponent},
   {path: 'account', component: AccountComponent},
-  {path: '', redirectTo:'/home', pathMatch: 'full'},
-  {path: 'habits', component: HabitHomeComponent}
+  {path: 'account/:id', component: AccountDetailComponent},
+  {path: 'habits', component: HabitHomeComponent},
+  {path: '', redirectTo:'/home', pathMatch: 'full'}
 ];
 @NgModule({
   declarations: [
@@ -28,7 +30,8 @@ const routes: Routes = [
     HabitFormComponent,
     HomeComponent,
     HabitHomeComponent,
-    AccountComponent
+    AccountComponent,
+    AccountDetailComponent
   ],
   imports: [
     BrowserModule,

@@ -1463,3 +1463,131 @@ Now we are going to add some navigation between routes in the application.
   ```
 - Go to your browser and refresh the page
 - Click on one of the links at the top and you will see that you navigate the pages without reloading the page
+
+## Navigate to and display components with route parameters on angular
+
+In this section, we will work with `route` params so we can navigate to pages with these params and use them when we get to those pages.
+
+- On your terminal; go to the root of your `angular` project
+- Create a new component call `account-detail`
+- On your editor; go to the `app.module.ts` file on the root of the `app` directory
+- On the `routes` array add the following
+  ```js
+  const routes: Routes = [
+    { path: "home", component: HomeComponent },
+    { path: "account", component: AccountComponent },
+    { path: "account/:id", component: AccountDetailComponent },
+    { path: "habits", component: HabitHomeComponent },
+    { path: "", redirectTo: "/home", pathMatch: "full" },
+  ];
+  ```
+- Go back to your terminal; on the root of your `angular` project run your local servers
+- Go to http://localhost:4200/account/1
+- You should see the `account-detail` message
+- Go to he `account.component.ts` file
+- We can use a link to pass the `route` param so lets create some links to redirect to the `account-detail` page with different params
+  ```js
+  @Component({
+    selector: 'app-account',
+    template: `
+      <p>
+        account works!
+      </p>
+      <ul>
+        <li><a [routerLink]="['/account', 1]">Account 1</a></li>
+        <li><a [routerLink]="['/account', 2]">Account 2</a></li>
+        <li><a [routerLink]="['/account', 3]">Account 3</a></li>
+      </ul>
+    `,
+    styles: []
+  })
+  ```
+  Here you see that we use the `routerLink` again but we wrap it on a `square bracket` to specify that we are biding some data to it then we pass an array with the `path` that we want and the `parameter` that we are going to send
+- On your browser; go to http://localhost:4200/account/
+- You should see the links that you created
+- Test the links and they should redirect you to the correct page with the correct param
+- Go back to your editor and go to the `account-detail` component
+- Import `ActivatedRoute` from `@angular/router`
+  `import { ActivatedRoute } from '@angular/router';`
+- Now we are going to use the `params` that we receive on the URL and the first thing that we are going to do is to inject the `route` on our `constructor`
+
+  ```js
+  export class AccountDetailComponent implements OnInit {
+
+    constructor(private route: ActivatedRoute) {}
+
+    ngOnInit(): void {}
+
+  }
+  ```
+
+- Then we need to pull the `id` that we pass it and store it on our component so we will create an `id` property on the `AccountDetailComponent` class
+
+  ```js
+  export class AccountDetailComponent implements OnInit {
+    id: string;
+
+    constructor(private route: ActivatedRoute) {}
+
+    ngOnInit(): void {}
+
+  }
+  ```
+
+- They are 2 ways to set up the `id` after receive it; one is an `observable` and the other is using a `snapshot`. We are going to be using a `snapshot` because we are not going to change the `route` param inside of this component; we only change it by clicking one of the links on the `account` page. On the `constructor` add the following
+
+  ```js
+  export class AccountDetailComponent implements OnInit {
+    id: string;
+
+    constructor(private route: ActivatedRoute) {
+      this.id = this.route.snapshot.paramMap.get('id') || '';
+    }
+
+    ngOnInit(): void {}
+
+  }
+  ```
+
+  We use the `snapshot` that is the current `snapshot` of the `route` then we will call the `paramMap` that have a set of methods to handle parameter access to handle both `route` and `query` parameters; in this case, we will get the `id`(We put the condition for the empty string so `typescript` don't yell at us)
+
+- Now add a `template` for the `id`
+  ```js
+  @Component({
+    selector: 'app-account-detail',
+    template: `
+      <p>
+        account-detail works!
+      </p>
+      <p>Account ID: {{ id }}</p>
+    `,
+    styles: []
+  })
+  ```
+- On your browser; go to http://localhost:4200/account/
+- Click on one of the `account-detail` links
+- You should see that the correct param is displayed on the page
+- Normally you will need that the `id` need to be a number so change the `id` property type to a `number`
+  ```js
+  export class AccountDetailComponent implements OnInit {
+    id: number;
+    ...
+  }
+  ```
+- Then cast the string that you receive from the `snapshot` to be a number
+
+  ```js
+  export class AccountDetailComponent implements OnInit {
+    id: string;
+
+    constructor(private route: ActivatedRoute) {
+      this.id = +(this.route.snapshot.paramMap.get('id') || '');
+    }
+
+    ngOnInit(): void {}
+
+  }
+  ```
+
+- Go back to the `account-details` page and refresh the page
+- Should work normally
