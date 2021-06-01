@@ -1591,3 +1591,76 @@ In this section, we will work with `route` params so we can navigate to pages wi
 
 - Go back to the `account-details` page and refresh the page
 - Should work normally
+
+## Subscribing to route params in angular
+
+As we mentioned before there are 2 ways to get a `route` param; one is to use a `snapshot`(what we using right now) and the other way is to subscribing to an `observable` of the `route` param but why we need the second one? Well lets do the following:
+
+- On your editor; go to the `account.component.ts` file
+- Copy all the `account-details` links
+- Then go to the `account-details` component
+- Paste the links on the `template` section
+  ```js
+  @Component({
+    selector: 'app-account-detail',
+    template: `
+      <p>
+        account-detail works!
+      </p>
+      <p>Account ID: {{ id }}</p>
+      <ul>
+        <li><a [routerLink]="['/account', 1]">Account 1</a></li>
+        <li><a [routerLink]="['/account', 2]">Account 2</a></li>
+        <li><a [routerLink]="['/account', 3]">Account 3</a></li>
+      </ul>
+    `,
+    styles: []
+  })
+  ```
+- On your terminal go to the root of the `angular` project and start your local servers
+- In your browser; go to http://localhost:4200/account/
+- Click on one of the `account-detail` link
+- You should be on the `account-detail` page and the param print on the page should be correct
+- Click on one of the `account-detail` links at the button(Different than the one that you are at this moment)
+- You should see that the URL change but no the param that is print on the page. This is because we only take the param in one moment with the `snapshot` that is why we need inside of the component subscribe to the param `observable`
+- Go back to the `account-detail` component
+- Copy the content of the `constructor`
+- Then remove the part after the equal and put an initial value for the `id` property
+
+  ```js
+  export class AccountDetailComponent implements OnInit {
+    id: number;
+
+    constructor(private route: ActivatedRoute) {
+      this.id = 0;
+    }
+
+    ngOnInit(): void {}
+
+  }
+  ```
+
+- Now paste the content that you copy before on the `ngOnInit` function
+- Update the function as the following:
+
+  ```js
+  export class AccountDetailComponent implements OnInit {
+    id: number;
+
+    constructor(private route: ActivatedRoute) {
+      this.id = 0;
+    }
+
+    ngOnInit(): void {
+      this.route.paramMap.subscribe((params: ParamMap) => {
+        this.id = +(params.get('id') || '');
+      });
+    }
+  }
+  ```
+
+  Here we `subscribe` to the `paramMap` and we will get the `param` then we use the `get` function to obtain the `id`
+
+- Now go to your browser and refresh the page
+- Click on the different links of the `account-detail`
+- You should see that the param change on the URL and the one is printed
