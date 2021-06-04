@@ -13,12 +13,36 @@ import { HomeComponent } from './home/home.component';
 import { HabitHomeComponent } from './habit-home/habit-home.component';
 import { AccountComponent } from './account/account.component';
 import { AccountDetailComponent } from './account-detail/account-detail.component';
+import { SystemComponent } from './system/system.component';
+import { SystemDetailComponent } from './system-detail/system-detail.component';
+import { NavBarComponent } from './nav-bar/nav-bar.component';
+import { SystemInfoComponent } from './system-info/system-info.component';
+import { SystemItemComponent } from './system-item/system-item.component';
 
 const routes: Routes = [
-  {path: 'home', component: HomeComponent},
-  {path: 'account', component: AccountComponent},
-  {path: 'account/:id', component: AccountDetailComponent},
-  {path: 'habits', component: HabitHomeComponent},
+  {
+    path: 'home',
+    component: HomeComponent,
+    children: [
+      {path: 'account', component: AccountComponent},
+      {path: 'account/:id', component: AccountDetailComponent},
+      {path: 'habits', component: HabitHomeComponent},
+    ]
+  },
+  {
+    path: 'system',
+    component: SystemComponent,
+    children: [
+      {
+        path: 'detail/:id',
+        component: SystemDetailComponent,
+        children: [
+          {path: 'info', component: SystemInfoComponent},
+          {path: 'items', component: SystemItemComponent}
+        ]
+      }
+    ]
+  },
   {path: '', redirectTo:'/home', pathMatch: 'full'}
 ];
 @NgModule({
@@ -31,7 +55,12 @@ const routes: Routes = [
     HomeComponent,
     HabitHomeComponent,
     AccountComponent,
-    AccountDetailComponent
+    AccountDetailComponent,
+    SystemComponent,
+    SystemDetailComponent,
+    NavBarComponent,
+    SystemInfoComponent,
+    SystemItemComponent
   ],
   imports: [
     BrowserModule,

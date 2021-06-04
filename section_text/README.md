@@ -1436,6 +1436,7 @@ Now we are going to add some navigation between routes in the application.
           <li><a href="/">Home</a></li>
           <li><a href="/account">Account</a></li>
         </ul>
+      </nav>
       <router-outlet></router-outlet>
     `,
     styles: []
@@ -1456,6 +1457,7 @@ Now we are going to add some navigation between routes in the application.
           <li><a routerLink="/">Home</a></li>
           <li><a routerLink="/account">Account</a></li>
         </ul>
+      </nav>
       <router-outlet></router-outlet>
     `,
     styles: []
@@ -1664,3 +1666,63 @@ As we mentioned before there are 2 ways to get a `route` param; one is to use a 
 - Now go to your browser and refresh the page
 - Click on the different links of the `account-detail`
 - You should see that the param change on the URL and the one is printed
+
+## Create Nested routes in angular
+
+Sometimes as the growth we will add some `nested routes` that will help us to update components on the page without having those components `nested`. `Angular router` allows us to have this kind of `nested routes` by default; let set our app to have this:
+
+- On your editor; go to the `app.module.ts`
+- On the `home` route object add a property called `children` that receive an array
+  ```js
+  const routes: Routes = [
+    {
+      path: 'home',
+      component: HomeComponent,
+      children: []
+    }
+    {path: 'account', component: AccountComponent},
+    {path: 'account/:id', component: AccountDetailComponent},
+    {path: 'habits', component: HabitHomeComponent},
+    {path: '', redirectTo:'/home', pathMatch: 'full'}
+  }
+  ```
+- Now move all the other routes except the `empty` match to the `children` array
+  ```js
+  const routes: Routes = [
+    {
+      path: 'home',
+      component: HomeComponent,
+      children: [
+        {path: 'account', component: AccountComponent},
+        {path: 'account/:id', component: AccountDetailComponent},
+        {path: 'habits', component: HabitHomeComponent},
+      ]
+    }
+    {path: '', redirectTo:'/home', pathMatch: 'full'}
+  }
+  ```
+- Then we need to add a `router-outlet` to the `home` component template
+  ```js
+  @Component({
+    selector: 'app-home',
+    template: `
+    <nav>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li><a routerLink="/home/account">Account</a></li>
+        <li><a routerLink="/home/habits">Habits</a></li>
+      </ul>
+    </nav>
+      <p>
+        home works!
+      </p>
+      <router-outlet></router-outlet>
+    `,
+    styles: []
+  })
+  ```
+- On your terminal; go to the root of the `angular` project and run the local servers
+- In your browser; go to http://localhost:4200/
+- You should be on the homepage
+- Click on one of the links
+- You should be on the correct page and have `home` before the current slug of the page
