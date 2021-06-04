@@ -1840,3 +1840,52 @@ Now that we have some `child routes` so we can imagine that we need some kind of
 - Click on one of the `account details` link
 - Click on the `account info` link
 - You should see that the `account info` message appear with the correct `id`
+
+## Inherit parent route parameters by default with paramsInheritanceStrategy
+
+At this moment we are taking the `id` of an `account` from the parent route of the `account-info` component but there is another way to do this that is called `paramsInheritanceStrategy` inside of our `app.module` when we create the `RouterModule`.
+
+The `forRoot` method of `RouterModule` takes is a second parameter that is an options object and inside of this options object we can define a property called `paramsInheritanceStrategy`; this is how the router merge parameters, data and resolve data from the parent to child routes. The default value of `paramsInheritanceStrategy` is `emptyOnly` which means that you can inherit or resolve data only for `path-less` or `component-less` routes but we are going to set it to `always` to enable unconditional inheritance of parent parameters, data, and resolved data in child routes. So let do an example:
+
+- On your editor; go to the `app.module.ts` file
+- On the `RouterModule.forRoot` add the following parameter
+  ```js
+  @NgModule({
+    declarations: [...],
+    imports: [
+      ...
+      RouterModule.forRoot(routes, {
+        paramsInheritanceStrategy: 'always'
+      })
+    ],
+    providers: [],
+    bootstrap: [AppComponent]
+  })
+  ```
+- Go to the `account-info` component
+- On the `ngOnInit` function; remove the `parent` property of the `route` instance
+
+  ```js
+  export class AccountInfoComponent implements OnInit {
+    id: number = 0;
+
+    constructor(private route: ActivatedRoute) { }
+
+    ngOnInit(): void {
+      this.route.paramMap.subscribe((params: ParamMap) => {
+          this.id = (+ (params.get('id') || ''));
+      })
+    }
+  }
+  ```
+
+- On your terminal; go to the root of the `angular` project and start your local servers
+- In your browser; go to http://localhost:4200/
+- Click on the `account` link
+- Click on one of the `account details` link
+- Click on the `account info` link
+- You should see that still work correctly passing the parent id
+
+### Note:
+
+If there is some overlapping on the data that you are passing from the parent route; the activated route will have the priority.

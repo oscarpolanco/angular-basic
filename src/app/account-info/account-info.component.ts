@@ -17,7 +17,7 @@ export class AccountInfoComponent implements OnInit {
   constructor(private route: ActivatedRoute) { }
 
   ngOnInit(): void {
-    this.route.parent?.paramMap.subscribe((params: ParamMap) => {
+    this.route.paramMap.subscribe((params: ParamMap) => {
         this.id = (+ (params.get('id') || ''));
     })
   }

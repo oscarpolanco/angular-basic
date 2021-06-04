@@ -23,7 +23,7 @@ export class SystemItemComponent implements OnInit {
   constructor(private systemService: SystemService, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
-    this.route.parent?.paramMap.pipe(
+    this.route.paramMap.pipe(
       switchMap((params: ParamMap) => {
         this.id = +(params.get('id') || '');
         return this.systemService.getSystemItems(this.id);

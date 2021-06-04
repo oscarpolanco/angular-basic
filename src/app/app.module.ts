@@ -74,7 +74,9 @@ const routes: Routes = [
     BrowserModule,
     ReactiveFormsModule,
     HttpClientModule,
-    RouterModule.forRoot(routes)
+    RouterModule.forRoot(routes, {
+      paramsInheritanceStrategy: 'always'
+    })
   ],
   providers: [],
   bootstrap: [AppComponent]
