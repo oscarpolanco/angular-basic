@@ -1721,8 +1721,122 @@ Sometimes as the growth we will add some `nested routes` that will help us to up
     styles: []
   })
   ```
+- Go to the `account` and `account-detail` component and update the links to have `/home/` before the `account` slug
+  `<li><a [routerLink]="['/home/account', 1]">Account 1</a></li>`
 - On your terminal; go to the root of the `angular` project and run the local servers
 - In your browser; go to http://localhost:4200/
 - You should be on the homepage
 - Click on one of the links
 - You should be on the correct page and have `home` before the current slug of the page
+
+## Access parent route parameters in angular
+
+Now that we have some `child routes` so we can imagine that we need some kind of data from the `parent route` to use it on it children like if we need to have a component that manages the actual information from an `account` for the `account details` component and we need to have the `id` that is on the `account detail` that will be its parent component.
+
+- On your terminal; go to the root of the `angular` project
+- Create a new component call `account-info`
+- On your editor; go to the `app.module.ts` file
+- Add the `account-info` component as a child route of the `account detail`
+  ```js
+  const routes: Routes = [
+    {
+      path: "home",
+      component: HomeComponent,
+      children: [
+        { path: "account", component: AccountComponent },
+        {
+          path: "account/:id",
+          component: AccountDetailComponent,
+          children: [{ path: "info", component: AccountInfoComponent }],
+        },
+        { path: "habits", component: HabitHomeComponent },
+      ],
+    },
+  ];
+  ```
+- Now get to the `account-detail` component
+- Add the a link that go to the `account-detail` component and the `route-outlet`
+  ```js
+  @Component({
+    selector: 'app-account-detail',
+    template: `
+      <p>
+        account-detail works!
+      </p>
+      <p>Account ID: {{ id }}</p>
+      <ul>
+        <li><a [routerLink]="['/home/account', 1]">Account 1</a></li>
+        <li><a [routerLink]="['/home/account', 2]">Account 2</a></li>
+        <li><a [routerLink]="['/home/account', 3]">Account 3</a></li>
+        <a routerLink="info">Account Info</a>
+      </ul>
+      <router-outlet></router-outlet>
+    `,
+    styles: []
+  })
+  ```
+- Now get to the `account-info` component
+- Add the following message on the component template
+  ```js
+  @Component({
+    selector: 'app-account-info',
+    template: `
+      <p>
+        This is the information of the account {{ id }}
+      </p>
+    `,
+    styles: []
+  })
+  ```
+- On the `AccountInfoComponent` class add an `id` property that will be a number
+
+  ```js
+  export class AccountInfoComponent implements OnInit {
+    id: number = 0;
+
+    constructor() {}
+
+    ngOnInit(): void {}
+  }
+  ```
+
+- Then import `ActivatedRoute` from `@angular/router`
+  `import { ActivatedRoute, ParamMap } from '@angular/router';`
+- Initialize a `route` an instance of `ActivatedRouter` on the `constructor`
+
+  ```js
+  export class AccountInfoComponent implements OnInit {
+    id: number = 0;
+
+    constructor(private route: ActivatedRoute) { }
+
+    ngOnInit(): void {}
+  }
+  ```
+
+- Import `ParamMap` from `@angular/router`
+  `import { ActivatedRoute, ParamMap } from '@angular/router';`
+- Now on the `ngOnInit` function add the following
+
+  ```js
+  export class AccountInfoComponent implements OnInit {
+  id: number = 0;
+
+  constructor(private route: ActivatedRoute) { }
+
+  ngOnInit(): void {
+    this.route.parent?.paramMap.subscribe((params: ParamMap) => {
+        this.id = (+ (params.get('id') || ''));
+    })
+  }
+  }
+  ```
+
+  Here we `subscribe` to the `paramMap` like we did before but on the `parent` of our current route
+
+- On your terminal; go to the root of the `angular` project and run your local servers
+- In the browser; go to http://localhost:4200/
+- Click on the `account` link
+- Click on one of the `account details` link
+- Click on the `account info` link
+- You should see that the `account info` message appear with the correct `id`

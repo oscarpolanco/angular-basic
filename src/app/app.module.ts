@@ -18,6 +18,7 @@ import { SystemDetailComponent } from './system-detail/system-detail.component';
 import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { SystemInfoComponent } from './system-info/system-info.component';
 import { SystemItemComponent } from './system-item/system-item.component';
+import { AccountInfoComponent } from './account-info/account-info.component';
 
 const routes: Routes = [
   {
@@ -25,7 +26,13 @@ const routes: Routes = [
     component: HomeComponent,
     children: [
       {path: 'account', component: AccountComponent},
-      {path: 'account/:id', component: AccountDetailComponent},
+      {
+        path: 'account/:id',
+        component: AccountDetailComponent,
+        children: [
+          {path: 'info', component: AccountInfoComponent}
+        ]
+      },
       {path: 'habits', component: HabitHomeComponent},
     ]
   },
@@ -60,7 +67,8 @@ const routes: Routes = [
     SystemDetailComponent,
     NavBarComponent,
     SystemInfoComponent,
-    SystemItemComponent
+    SystemItemComponent,
+    AccountInfoComponent
   ],
   imports: [
     BrowserModule,
